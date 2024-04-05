@@ -2,4 +2,4 @@
 
 ## Usage
 Compile it with ``make`` and run it with ``./ttysnake``. Make sure you have ncurses installed.
-The snakes are controlled with the array keys and "w", "a", "s", "d". "q" quits the game.
+The snakes are controlled with the arroy keys and ``w``, ``a``, ``s``, ``d``. ``q`` quits the game.
