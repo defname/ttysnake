@@ -5,8 +5,9 @@
 
 #define COLOR_SNAKE0    1
 #define COLOR_SNAKE1    2
-#define COLOR_ITEM      3
-#define COLOR_LOGO      4
+#define COLOR_SNAKE_DRAW 3
+#define COLOR_ITEM      4
+#define COLOR_LOGO      5
 #define COLOR_BORDER    COLOR_LOGO
 
 #define SET_COLOR(color) has_colors() && attron(COLOR_PAIR(color))

@@ -26,6 +26,7 @@ int main() {
         start_color();
         init_pair(COLOR_SNAKE0, COLOR_RED, COLOR_BLACK);
         init_pair(COLOR_SNAKE1, COLOR_GREEN, COLOR_BLACK);
+        init_pair(COLOR_SNAKE_DRAW, COLOR_YELLOW, COLOR_BLACK);
         init_pair(COLOR_ITEM, COLOR_YELLOW, COLOR_BLACK);
         init_pair(COLOR_LOGO, COLOR_BLUE, COLOR_BLACK);
     }
@@ -48,6 +49,7 @@ int main() {
             int snakeIdx = game.winner == -1 ? 0 : game.winner;
             Snake *snake = &game.snake[snakeIdx];
             int snakeColor = snakeIdx == 0 ? COLOR_SNAKE0 : COLOR_SNAKE1;
+            snakeColor = game.winner != -1 ? snakeColor : COLOR_SNAKE_DRAW;
             /* change the direction randomly */
             if (game.iteration % (rand()%50+1) == 0) {
                 snake->dir += rand()%2 ? -1 : 1;
