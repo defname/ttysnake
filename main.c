@@ -18,6 +18,7 @@
 #include "snake.h"
 #include "gui.h"
 #include "game.h"
+#include "agent.h"
 
 int main() {
 
@@ -53,6 +54,9 @@ int main() {
 
     Game game;
     gameInit(&game, &width, &height);
+
+    Agent agent;
+    agentInit(&agent, &game);
 
     for (; !exit; game.iteration++) {
         getmaxyx(stdscr, height, width);
@@ -97,6 +101,7 @@ int main() {
             /* the input processing has to be at the end of the game loop
              * because curses doesn't draw anything otherwise */
             gameProcessInput(&game);
+            agentMakeMove(&agent, 1);
         }
         
         erase();

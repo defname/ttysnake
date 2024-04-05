@@ -1,4 +1,5 @@
 #include <curses.h>
+#include <stdio.h>
 #include "snake.h"
 
 /**
@@ -25,7 +26,7 @@ void snakeInit(Snake *snake, int length, int startX, int startY, Direction dir) 
 
 void snakeMove(Snake *snake, int scrWidth, int scrHeight) {
     Position head = vec2Add(snake->body[0], dirToVec2(snake->dir));
-    vec2LimitRange(&head, 1, scrWidth-1, 1, scrHeight-1);
+    //vec2LimitRange(&head, 1, scrWidth-1, 1, scrHeight-1);
     for (int i=snake->length-1; i>0; i--) {
         snake->body[i] = snake->body[i-1];
     }
@@ -43,8 +44,11 @@ void snakeDraw(Snake *snake) {
     }
 }
 
-int snakeCheckCollision(Snake *snake, Snake *enemy) {
+int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height) {
     Position head = snake->body[0];
+    /* check for wall collision */
+    if (head.x == 0 || head.x == width-1) return 1;
+    if (head.y == 0 || head.y == height-1) return 1;
     /* check for self collision */
     for (int i=1; i<snake->length; i++) {
         if (vec2Equal(head, snake->body[i])) return 1;

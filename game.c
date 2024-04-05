@@ -33,6 +33,7 @@ void gameProcessInput(Game *game) {
             case KEY_DOWN:
                 snakeChangeDirection(&game->snake[0], DOWN);
                 break;
+    /*
             case 'a':
                 snakeChangeDirection(&game->snake[1], LEFT);
                 break;
@@ -45,6 +46,7 @@ void gameProcessInput(Game *game) {
             case 's':
                 snakeChangeDirection(&game->snake[1], DOWN);
                 break;
+    */
         }
     }
 
@@ -59,11 +61,11 @@ void gameUpdate(Game *game) {
     snakeMove(&game->snake[1], width, height);
 
     /* check collisions */
-    if (snakeCheckCollision(&game->snake[0], &game->snake[1])) {
+    if (snakeCheckCollision(&game->snake[0], &game->snake[1], width, height)) {
         game->winner = FIX_WINNER(game, 1);
         game->running = 0;
     }
-    if (snakeCheckCollision(&game->snake[1], &game->snake[0])) {
+    if (snakeCheckCollision(&game->snake[1], &game->snake[0], width, height)) {
         game->winner = FIX_WINNER(game, 0);
         game->running = 0;
     }

@@ -15,6 +15,10 @@ Vec2 vec2Mul(Vec2 a, int s) {
     return result;
 }
 
+unsigned int vec2Dist(Vec2 a, Vec2 b) {
+    return abs(a.x-b.x) + abs(a.y-b.y);
+}
+
 Vec2 dirToVec2(Direction dir) {
     Vec2 v;
     switch (dir) {
