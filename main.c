@@ -1,4 +1,7 @@
 #include <curses.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include "helper.h"
 #include "snake.h"
 #include "item.h"
@@ -21,6 +24,8 @@ int main() {
     timeout(0);
     leaveok(stdscr, TRUE);
     curs_set(0);
+
+    srand(time(NULL));
 
     GameState state = MENU;
 
@@ -50,7 +55,16 @@ int main() {
         
         switch (state) {
             case MENU:
+                snake2.length = 0;
+                
+                if (iteration % (rand()%50+1) == 0) {
+                    snake1.dir += rand()%2 - 1;
+                    snake1.dir %= 4;
+                }
+
+                snakeMove(&snake1, width, height);
                 printMainMenu(width, height);
+                snakeDraw(&snake1);
                 napms(100);
                 int k = wgetch(stdscr);
                 if (k == ' ') {
@@ -71,11 +85,11 @@ int main() {
 
                 /* check collisions */
                 if (snakeCheckCollision(&snake1, &snake2)) {
-                    exit = 1;
+                    state = MENU;
                     winner = FIX_WINNER(snake1, snake2, 2);
                 }
                 if (snakeCheckCollision(&snake2, &snake1)) {
-                    exit = 1;
+                    state = MENU;
                     winner = FIX_WINNER(snake1, snake2, 1);
                 }
                 /* check item */
@@ -110,7 +124,7 @@ int main() {
                 napms(100);
                 for (int k = wgetch(stdscr); k != ERR; k = getch()) {
                     switch (k) {
-                        case 'q': exit = 1; break;
+                        case 'q': state = MENU; break;
                         case KEY_LEFT:
                             snakeChangeDirection(&snake1, LEFT);
                             break;
@@ -135,7 +149,6 @@ int main() {
                         case 's':
                             snakeChangeDirection(&snake2, DOWN);
                             break;
-
                     }
                 }
                 break;
