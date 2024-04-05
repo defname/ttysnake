@@ -1,3 +1,16 @@
+/**
+ * ttysnake - a simple two player snake game
+ *
+ * To compile it you need the ncurses library (or an replacement) installed.
+ * Compile it with
+ *   gcc -o ttysnake *.c -lcurses
+ * 
+ * The snake are controlled with the arrow keys and "w", "a", "s", "g".
+ * "q" quits the game.
+ *
+ * http://github.com/naarf/ttysnake
+ */
+
 #include <curses.h>
 #include <stdlib.h>
 #include <time.h>
