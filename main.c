@@ -90,8 +90,8 @@ int main() {
     endwin();
 
     printf("winner: %d\n", game.winner);
-    printf("snake 0: %d %d\n", game.snake[0].length, game.snake[0].dir);
-    printf("snake 1: %d %d\n", game.snake[1].length, game.snake[1].dir);
+    printf("snake 0: %d\n", game.snake[0].length);
+    printf("snake 1: %d\n", game.snake[1].length);
     
     return 0;
 }

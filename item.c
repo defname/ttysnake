@@ -1,6 +1,7 @@
 #include <curses.h>
 #include "item.h"
 #include "gui.h"
+#include "common.h"
 
 void itemInit(Item *item, int lifespan, Position pos) {
     item->age = 0;
@@ -11,7 +12,7 @@ void itemInit(Item *item, int lifespan, Position pos) {
 void itemDraw(Item *item) {
     if (item->age >= item->lifespan) return;
     SET_COLOR(COLOR_ITEM);
-    mvaddch(item->pos.y, item->pos.x, 'X');
+    mvaddch(item->pos.y, item->pos.x, ITEM_SYMBOL);
     UNSET_COLOR(COLOR_ITEM);
 }
 

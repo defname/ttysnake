@@ -1,5 +1,6 @@
 #include <curses.h>
 #include "snake.h"
+
 /**
  * Add a and b respecting limits
  */
@@ -38,7 +39,7 @@ void snakeChangeDirection(Snake *snake, Direction dir) {
 
 void snakeDraw(Snake *snake) {
     for (int i=0; i<snake->length; i++) {
-        mvaddch(snake->body[i].y, snake->body[i].x, SNAKE_CHAR);
+        mvaddch(snake->body[i].y, snake->body[i].x, SNAKE_SYMBOL);
     }
 }
 
