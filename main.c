@@ -2,16 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "helper.h"
 #include "snake.h"
-#include "item.h"
 #include "gui.h"
 #include "game.h"
-
-typedef enum {
-    RUNNING,
-    MENU
-} GameState;
 
 int main() {
 
@@ -28,7 +21,14 @@ int main() {
 
     srand(time(NULL));
 
-    GameState state = MENU;
+    /* init colors */
+    if (has_colors()) {
+        start_color();
+        init_pair(COLOR_SNAKE0, COLOR_RED, COLOR_BLACK);
+        init_pair(COLOR_SNAKE1, COLOR_GREEN, COLOR_BLACK);
+        init_pair(COLOR_ITEM, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(COLOR_LOGO, COLOR_BLUE, COLOR_BLACK);
+    }
 
     /* screen dimensions (updated every iteration) */
     int height;
@@ -38,110 +38,50 @@ int main() {
     int exit = 0;
 
     Game game;
-    gameInit(&game, width, height);
-
-    int itemDropDelay = 0;
+    gameInit(&game, &width, &height);
 
     for (; !exit; game.iteration++) {
         getmaxyx(stdscr, height, width);
-        
-        switch (state) {
-            case MENU: {
-                Snake *snake = game.winner == -1 ? &game.snake[0] : &game.snake[game.winner];
-                
-                if (game.iteration % (rand()%50+1) == 0) {
-                    snake->dir += rand()%2 ? -1 : 1;
-                    snake->dir %= 4;
-                }
-
-                snakeMove(snake, width, height);
-                printMainMenu(width, height);
-                snakeDraw(snake);
-                napms(100);
-                int k = wgetch(stdscr);
-                if (k == ' ') {
-                    gameInit(&game, width, height);
-                    state = RUNNING;
-                } else if (k == 'q') {
-                    exit = 1;
-                }
-                break;
+    
+        if (!game.running) { /* show menu */
+            /* let the winning snake continue crawling around */
+            int snakeIdx = game.winner == -1 ? 0 : game.winner;
+            Snake *snake = &game.snake[snakeIdx];
+            int snakeColor = snakeIdx == 0 ? COLOR_SNAKE0 : COLOR_SNAKE1;
+            /* change the direction randomly */
+            if (game.iteration % (rand()%50+1) == 0) {
+                snake->dir += rand()%2 ? -1 : 1;
+                snake->dir %= 4;
             }
-            case RUNNING: {
-                /* update game state */
-                snakeMove(&game.snake[0], width, height);
-                snakeMove(&game.snake[1], width, height);
+            snakeMove(snake, width, height);
 
-                /* check collisions */
-                if (snakeCheckCollision(&game.snake[0], &game.snake[1])) {
-                    state = MENU;
-                    game.winner = FIX_WINNER(game, 1);
-                }
-                if (snakeCheckCollision(&game.snake[1], &game.snake[0])) {
-                    state = MENU;
-                    game.winner = FIX_WINNER(game, 0);
-                }
-                /* check item */
-                if (itemAlive(&game.item)) {
-                    if (vec2Equal(game.snake[0].body[0], game.item.pos)) {
-                        game.snake[0].length++;
-                        game.item.lifespan = 0;
-                    }
-                    else if (vec2Equal(game.snake[1].body[0], game.item.pos)) {
-                        game.snake[1].length++;
-                        game.item.lifespan = 0;
-                    }
-                    game.item.age++;
-                }
-                else if (itemDropDelay > 0) itemDropDelay--;
-                else {
-                    itemDropDelay = 1;
-                    itemInit(&game.item, 100, vec2Random(1, width-1, 1, height-1));
-                }
+            /* draw stuff */
+            printMainMenu(width, height);
+            SET_COLOR(snakeColor);
+            snakeDraw(snake);
+            UNSET_COLOR(snakeColor);
 
-                /* output */
-                printBorder();
-                //mvprintw(1, 1, "%d", game.snake[0].length);
-                //mvprintw(2, 1, "%d/%d", game.snake[0].body[0].x, snake.body[0].y);
+            napms(100);
 
-                snakeDraw(&game.snake[0]);
-                snakeDraw(&game.snake[1]);
-
-                if (itemAlive(&game.item)) itemDraw(&game.item);
-
-                // keyPressed = wgetch(stdscr);
-                napms(100);
-                for (int k = wgetch(stdscr); k != ERR; k = getch()) {
-                    switch (k) {
-                        case 'q': state = MENU; break;
-                        case KEY_LEFT:
-                            snakeChangeDirection(&game.snake[0], LEFT);
-                            break;
-                        case KEY_RIGHT:
-                            snakeChangeDirection(&game.snake[0], RIGHT);
-                            break;
-                        case KEY_UP:
-                            snakeChangeDirection(&game.snake[0], UP);
-                            break;
-                        case KEY_DOWN:
-                            snakeChangeDirection(&game.snake[0], DOWN);
-                            break;
-                        case 'a':
-                            snakeChangeDirection(&game.snake[1], LEFT);
-                            break;
-                        case 'd':
-                            snakeChangeDirection(&game.snake[1], RIGHT);
-                            break;
-                        case 'w':
-                            snakeChangeDirection(&game.snake[1], UP);
-                            break;
-                        case 's':
-                            snakeChangeDirection(&game.snake[1], DOWN);
-                            break;
-                    }
-                }
-                break;
+            /* process input */
+            int k = wgetch(stdscr);
+            if (k == ' ') {
+                gameInit(&game, &width, &height);
+                game.running = 1;
+            } else if (k == 'q') {
+                exit = 1;
             }
+        }
+        else { /* game running */
+            /* update game state */
+            gameUpdate(&game);
+
+            gameDraw(&game);
+            
+            napms(100);
+            /* the input processing has to be at the end of the game loop
+             * because curses doesn't draw anything otherwise */
+            gameProcessInput(&game);
         }
         
         erase();

@@ -10,7 +10,9 @@ void itemInit(Item *item, int lifespan, Position pos) {
 
 void itemDraw(Item *item) {
     if (item->age >= item->lifespan) return;
-    printChar(item->pos.x, item->pos.y, 'X');
+    SET_COLOR(COLOR_ITEM);
+    mvaddch(item->pos.y, item->pos.x, 'X');
+    UNSET_COLOR(COLOR_ITEM);
 }
 
 int itemAlive(Item *item) {

@@ -1,4 +1,5 @@
 #include <curses.h>
+#include "gui.h"
 
 #define LOGO_HEIGHT 8
 #define LOGO_WIDTH  72
@@ -17,9 +18,11 @@ void printLogo(int width, int height) {
     int offsetX = (width - LOGO_WIDTH) / 2;
     int offsetY = (height - LOGO_HEIGHT) / 2;
 
+    SET_COLOR(COLOR_LOGO);
     for (int y=0; y<LOGO_HEIGHT; y++) {
         mvprintw(offsetY+y, offsetX, "%*s", LOGO_WIDTH, text[y]);
     }
+    UNSET_COLOR(COLOR_LOGO);
 }
 
 void printMainMenu(int width, int height) {
@@ -34,9 +37,8 @@ void printMainMenu(int width, int height) {
 }
 
 void printBorder() {
+    SET_COLOR(COLOR_BORDER);
     wborder(stdscr, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+    UNSET_COLOR(COLOR_BORDER);
 }
 
-void printChar(int x, int y, char c) {
-    mvaddch(y, x, c);
-}
