@@ -22,6 +22,9 @@ typedef struct {
     Item item;
     /* snake objects */
     Snake snake[2];
+
+    /* last player input */
+    Direction playerInput[2];
 } Game;
 
 /* if both snakes run directly against each other it's a draw */
