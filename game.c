@@ -10,6 +10,10 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
     game->iteration = 0;
     game->itemDropDelay = 0;
     game->winner = -1;
+
+    game->playerInput[0] = LEFT;
+    game->playerInput[1] =  RIGHT;
+
     itemInit(&game->item, 0, vec2Init(10, 10));
 
     int centerY = *game->screenHeight /2;
@@ -22,28 +26,28 @@ void gameProcessInput(Game *game) {
         switch (k) {
             case 'q': game->running = 0; break;
             case KEY_LEFT:
-                snakeChangeDirection(&game->snake[0], LEFT);
+                game->playerInput[0] = LEFT;
                 break;
             case KEY_RIGHT:
-                snakeChangeDirection(&game->snake[0], RIGHT);
+                game->playerInput[0] = RIGHT;
                 break;
             case KEY_UP:
-                snakeChangeDirection(&game->snake[0], UP);
+                game->playerInput[0] = UP;
                 break;
             case KEY_DOWN:
-                snakeChangeDirection(&game->snake[0], DOWN);
+                game->playerInput[0] = DOWN;
                 break;
             case 'a':
-                snakeChangeDirection(&game->snake[1], LEFT);
+                game->playerInput[1] = LEFT;
                 break;
             case 'd':
-                snakeChangeDirection(&game->snake[1], RIGHT);
+                game->playerInput[1] = RIGHT;
                 break;
             case 'w':
-                snakeChangeDirection(&game->snake[1], UP);
+                game->playerInput[1] = UP;
                 break;
             case 's':
-                snakeChangeDirection(&game->snake[1], DOWN);
+                game->playerInput[1] = DOWN;
                 break;
         }
     }
@@ -53,6 +57,10 @@ void gameProcessInput(Game *game) {
 void gameUpdate(Game *game) {
     int width = *game->screenWidth;
     int height = *game->screenHeight;
+
+    /* update snake directions */
+    snakeChangeDirection(&game->snake[0], game->playerInput[0]);
+    snakeChangeDirection(&game->snake[1], game->playerInput[1]);
 
     /* move snakes */
     snakeMove(&game->snake[0], width, height);
