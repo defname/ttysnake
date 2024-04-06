@@ -16,6 +16,7 @@ void snakeInit(Snake *snake, int length, int startX, int startY, Direction dir) 
     Position position = {startX, startY};
     snake->length = length;
     snake->dir = dir;
+    snake->alive = 1;
     snake->body[0] = position;
     Vec2 d = vec2Mul(dirToVec2(dir), -1);
 
@@ -47,8 +48,10 @@ void snakeDraw(Snake *snake) {
 int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height) {
     Position head = snake->body[0];
     /* check for wall collision */
-    if (head.x == 0 || head.x == width-1) return 1;
-    if (head.y == 0 || head.y == height-1) return 1;
+    if (head.x == 0 || head.x == width-1 || head.y == 0 || head.y == height-1) {
+        return 1;
+    }
+
     /* check for self collision */
     for (int i=1; i<snake->length; i++) {
         if (vec2Equal(head, snake->body[i])) return 1;

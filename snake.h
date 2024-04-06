@@ -6,6 +6,7 @@
 
 typedef struct {
     int length;
+    int alive;
     Direction dir;
     Position body[SNAKE_MAX_LENGTH];
 } Snake;

@@ -18,9 +18,14 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
 }
 
 void gameProcessInput(Game *game) {
-    for (int k = wgetch(stdscr); k != ERR; k = getch()) {
+//    for (int k = wgetch(stdscr); k != ERR; k = getch()) {
+    int k = getch();
         switch (k) {
-            case 'q': game->running = 0; break;
+            case 'q':
+                game->running = 0;
+                fprintf(stderr, "Game quit by user\n");
+                break;
+    /*
             case KEY_LEFT:
                 snakeChangeDirection(&game->snake[0], LEFT);
                 break;
@@ -33,7 +38,6 @@ void gameProcessInput(Game *game) {
             case KEY_DOWN:
                 snakeChangeDirection(&game->snake[0], DOWN);
                 break;
-    /*
             case 'a':
                 snakeChangeDirection(&game->snake[1], LEFT);
                 break;
@@ -48,7 +52,7 @@ void gameProcessInput(Game *game) {
                 break;
     */
         }
-    }
+//    }
 
 }
 
@@ -64,10 +68,12 @@ void gameUpdate(Game *game) {
     if (snakeCheckCollision(&game->snake[0], &game->snake[1], width, height)) {
         game->winner = FIX_WINNER(game, 1);
         game->running = 0;
+        game->snake[0].alive = 0;
     }
     if (snakeCheckCollision(&game->snake[1], &game->snake[0], width, height)) {
         game->winner = FIX_WINNER(game, 0);
         game->running = 0;
+        game->snake[1].alive = 0;
     }
     /* check item */
     if (itemAlive(&game->item)) {
@@ -90,6 +96,9 @@ void gameUpdate(Game *game) {
 }
 
 void gameDraw(Game *game) {
+    /* don't draw the last frame, to prevent drawing snakes over the border*/
+    if (!game->running) return;
+
     /* draw border */
     printBorder();
     //mvprintw(1, 1, "%d", game->snake[0].length);

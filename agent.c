@@ -22,10 +22,12 @@ void agentInit(Agent *agent, Game *game) {
     agent->game = game;
 }
 
-static double evaluate(const Game *game, const Game *prevGame, int player) {
-    if (game->winner != -1) { /* if there is a winner */
-        return game->winner == player ? 10000 : -10000;
+static int evaluate(const Game *game, const Game *prevGame, int player) {
+    if (!game->running) { /* if there is a winner */
+        if (game->winner == -1) return -500;
+        return game->winner == player ? INT_MAX : INT_MIN;
     }
+    return game->iteration;
 
     int enemy = (player + 1) % 2;
     const Snake *snake = &game->snake[player];
@@ -55,6 +57,10 @@ static int isPassable(Game *game, int x, int y) {
     return 1;
 }
 
+/**
+ * Perform a breadth-first-search and return the direction to choose.
+ * Return -1 if no path is found
+ */
 static int bfs(Game *game, Position startPos, Position endPos) {
 #define XY2IDX(x, y)    ((y)*width+x)
 #define POS2IDX(pos)    XY2IDX(pos.x, pos.y)
@@ -191,7 +197,7 @@ static int bfs(Game *game, Position startPos, Position endPos) {
  * @param prevGame has to be NULL
  * @return The score for the player.
  */
-static double negamax(int player, int depth, const Game *game, Move *bestMove, int rDepth, const Game *prevGame) {
+static int negamax(int player, int depth, const Game *game, Move *bestMove, int rDepth, const Game *prevGame) {
     /* the snakes in the Game object are indexed with 0 and 1,
      * the negamax function needs players to be -1 and 1.
      */
@@ -226,29 +232,36 @@ static double negamax(int player, int depth, const Game *game, Move *bestMove, i
 }
 
 void agentMakeMove(Agent *agent, int playerIdx) {
-    Move bestMove;
+    Move bestMove = MOVE_FORWARD;
     int player = PLAYER_IDX_TO_NEGAMAX(playerIdx);
 
     /* If the enemy is near try to make a clever move */
     if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < 10) {
-        double score = negamax(player, 4, agent->game, &bestMove, 0, NULL);
+        fprintf(stderr, "%d near enemy...\n", playerIdx);
+        int score = negamax(player, 10, agent->game, &bestMove, 0, NULL);
+        fprintf(stderr, "  score: %d\n", score);
+        fprintf(stderr, "  move: %d\n", bestMove);
         agent->game->snake[playerIdx].dir += bestMove;
         agent->game->snake[playerIdx].dir %= 4;
         return;
     }
     /* otherwise try to find a way to the item if it's alive */
     if (itemAlive(&agent->game->item)) {
-        fprintf(stderr, "pathfinding...\n");
+        fprintf(stderr, "%d pathfinding...\n", playerIdx);
         Snake *snake = &agent->game->snake[playerIdx];
         Direction dir = bfs(agent->game, snake->body[0], agent->game->item.pos);
         if (dir != -1) {
-            fprintf(stderr, "found path\n");
-            fprintf(stderr, "new dir: %d\n", dir);
+            fprintf(stderr, "  found path\n");
+            fprintf(stderr, "  new dir: %d\n", dir);
             snakeChangeDirection(snake, dir);
+            return;
         }
     }
     /* otherwise try not to die */
-    double score = negamax(player, 4, agent->game, &bestMove, 0, NULL);
+    fprintf(stderr, "%d don't die...\n", playerIdx);
+    int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
+    fprintf(stderr, "  score: %d\n", score);
+    fprintf(stderr, "  move: %d\n", bestMove);
     agent->game->snake[playerIdx].dir += bestMove;
     agent->game->snake[playerIdx].dir %= 4;
 

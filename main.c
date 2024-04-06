@@ -62,6 +62,10 @@ int main() {
         getmaxyx(stdscr, height, width);
     
         if (!game.running) { /* show menu */
+            fprintf(stderr, "winner: %d\n", game.winner);
+            fprintf(stderr, "alive?  snake0: %d snake1: %d\n", game.snake[0].alive, game.snake[1].alive);
+            fprintf(stderr, "dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
+
             /* let the winning snake continue crawling around */
             int snakeIdx = game.winner == -1 ? 0 : game.winner;
             Snake *snake = &game.snake[snakeIdx];
@@ -101,6 +105,7 @@ int main() {
             /* the input processing has to be at the end of the game loop
              * because curses doesn't draw anything otherwise */
             gameProcessInput(&game);
+            agentMakeMove(&agent, 0);
             agentMakeMove(&agent, 1);
         }
         
