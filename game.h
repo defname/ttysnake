@@ -25,6 +25,10 @@ typedef struct {
 
     /* last player input */
     Direction playerInput[2];
+
+    /* indicates that this object is a copy, used by the agent, that
+     * creates copies of the game */
+    int isCopy;
 } Game;
 
 /* if both snakes run directly against each other it's a draw */

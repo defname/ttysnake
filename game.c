@@ -11,6 +11,8 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
     game->itemDropDelay = 0;
     game->winner = -1;
 
+    game->isCopy = 0;
+
     game->playerInput[0] = LEFT;
     game->playerInput[1] =  RIGHT;
 

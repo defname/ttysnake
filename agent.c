@@ -25,7 +25,7 @@ void agentInit(Agent *agent, Game *game) {
 static int evaluate(const Game *game, const Game *prevGame, int player) {
     if (!game->running) { /* if there is a winner */
         if (game->winner == -1) return -500;
-        return game->winner == player ? INT_MAX : INT_MIN;
+        return game->winner == player ? 1000000 : -1000000;
     }
     return game->iteration;
 
@@ -41,6 +41,8 @@ static int evaluate(const Game *game, const Game *prevGame, int player) {
 
 static Game copyGame(const Game *game) {
     Game copy = *game;
+
+    copy.isCopy = 1;
 
     return copy;
 }
