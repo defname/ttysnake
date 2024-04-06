@@ -15,6 +15,11 @@ const char text[LOGO_HEIGHT][LOGO_WIDTH+1] = {
 
 
 void printLogo(int width, int height) {
+    if (width < BREAKPOINT_WIDTH || height < BREAKPOINT_HEIGHT) {
+        SET_COLOR(COLOR_LOGO);
+        mvprintw(height/2-3, (width-8)/2, "TTYSNAKE");
+        UNSET_COLOR(COLOR_LOGO);
+    }
     int offsetX = (width - LOGO_WIDTH) / 2;
     int offsetY = (height - LOGO_HEIGHT) / 2;
 
@@ -30,6 +35,9 @@ void printMainMenu(int width, int height) {
 
     int menuWidth = 20;
     int offsetY = (height + LOGO_HEIGHT) / 2 + 2;
+    if (height < BREAKPOINT_HEIGHT || width < BREAKPOINT_WIDTH) {
+        offsetY = height/2 + 1;
+    }
     int offsetX = (width - menuWidth) / 2;
 
     mvprintw(offsetY+1, offsetX, "Start Game   <space>");
