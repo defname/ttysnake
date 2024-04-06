@@ -3,6 +3,11 @@
 
 #define LOGO_HEIGHT 8
 #define LOGO_WIDTH  72
+
+#define BREAKPOINT_HEIGHT 22
+#define BREAKPOINT_WIDTH  74
+
+
 const char text[LOGO_HEIGHT][LOGO_WIDTH+1] = {
     " _______  _______  __   __  _______  __    _  _______  ___   _  _______ \0",
     "|       ||       ||  | |  ||       ||  |  | ||   _   ||   | | ||       |\0",
