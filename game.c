@@ -97,7 +97,7 @@ void gameUpdate(Game *game) {
 
 void gameDraw(Game *game) {
     /* draw border */
-    printBorder();
+    printBorder(*game->screenWidth, *game->screenHeight);
     //mvprintw(1, 1, "%d", game->snake[0].length);
     //mvprintw(2, 1, "%d/%d", game->snake[0].body[0].x, snake.body[0].y);
 

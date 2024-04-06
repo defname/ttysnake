@@ -45,9 +45,9 @@ int main() {
     }
 
     /* screen dimensions (updated every iteration) */
-    int height;
-    int width;
-    getmaxyx(stdscr, height, width);
+    int height = 15;
+    int width = 40;
+    //getmaxyx(stdscr, height, width);
 
     int exit = 0;
 
@@ -55,7 +55,7 @@ int main() {
     gameInit(&game, &width, &height);
 
     for (; !exit; game.iteration++) {
-        getmaxyx(stdscr, height, width);
+        // getmaxyx(stdscr, height, width);
     
         if (!game.running) { /* show menu */
             /* let the winning snake continue crawling around */
