@@ -15,6 +15,6 @@
 
 void printLogo(int width, int height);
 void printMainMenu(int width, int height);
-void printBorder();
+void printBorder(int width, int height);
 
 #endif

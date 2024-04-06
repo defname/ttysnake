@@ -20,7 +20,37 @@
 #include "game.h"
 #include "agent.h"
 
-int main() {
+enum {
+    FLAG_FIXED_SIZE = 1
+};
+
+typedef struct {
+    int flags;
+    int width;
+    int height;
+} Settings;
+
+#define SETTINGS_FIXED_SIZE(settings) (settings.flags & FLAG_FIXED_SIZE)
+
+static void setArgs(Settings *settings, int argc, const char *argv[]) {
+    /* init settings */
+    settings->flags = 0;
+    settings->width = 0;
+    settings->height = 0;
+
+    if (argc == 3) {
+        int w, h;
+        if (sscanf(argv[1], "%d", &w) == 1 && sscanf(argv[2], "%d", &h) == 1) {
+            settings->flags |= FLAG_FIXED_SIZE;
+            settings->width = w;
+            settings->height = h;
+        }
+    }
+}
+
+int main(int argc, const char *argv[]) {
+    Settings settings;
+    setArgs(&settings, argc, argv);
 
     /* init curses */
     initscr();
@@ -48,7 +78,13 @@ int main() {
     /* screen dimensions (updated every iteration) */
     int height;
     int width;
-    getmaxyx(stdscr, height, width);
+    if (SETTINGS_FIXED_SIZE(settings)) {
+        width = settings.width;
+        height = settings.height;
+    }
+    else {
+       getmaxyx(stdscr, height, width);
+    }
 
     int exit = 0;
 
@@ -59,7 +95,9 @@ int main() {
     agentInit(&agent, &game);
 
     for (; !exit; game.iteration++) {
-        getmaxyx(stdscr, height, width);
+        if (!SETTINGS_FIXED_SIZE(settings)) {
+            getmaxyx(stdscr, height, width);
+        }
     
         if (!game.running) { /* show menu */
             fprintf(stderr, "winner: %d\n", game.winner);

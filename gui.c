@@ -7,6 +7,7 @@
 #define BREAKPOINT_HEIGHT 22
 #define BREAKPOINT_WIDTH  74
 
+
 const char text[LOGO_HEIGHT][LOGO_WIDTH+1] = {
     " _______  _______  __   __  _______  __    _  _______  ___   _  _______ \0",
     "|       ||       ||  | |  ||       ||  |  | ||   _   ||   | | ||       |\0",
@@ -48,9 +49,20 @@ void printMainMenu(int width, int height) {
     mvprintw(offsetY+3, offsetX, "Quit            q   ");
 }
 
-void printBorder() {
+static void rectangle(int y1, int x1, int y2, int x2)
+{
+    mvhline(y1, x1, 0, x2-x1);
+    mvhline(y2, x1, 0, x2-x1);
+    mvvline(y1, x1, 0, y2-y1);
+    mvvline(y1, x2, 0, y2-y1);
+    mvaddch(y1, x1, ACS_ULCORNER);
+    mvaddch(y2, x1, ACS_LLCORNER);
+    mvaddch(y1, x2, ACS_URCORNER);
+    mvaddch(y2, x2, ACS_LRCORNER);
+}
+void printBorder(int width, int height) {
     SET_COLOR(COLOR_BORDER);
-    wborder(stdscr, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
+    rectangle(0, 0, height-1, width-1);
     UNSET_COLOR(COLOR_BORDER);
 }
 
