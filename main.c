@@ -14,6 +14,7 @@
 #include <curses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "snake.h"
 #include "gui.h"
@@ -21,7 +22,9 @@
 #include "agent.h"
 
 enum {
-    FLAG_FIXED_SIZE = 1
+    FLAG_FIXED_SIZE     = 1,
+    FLAG_AGENT_0        = 2,
+    FLAG_AGENT_1        = 4
 };
 
 typedef struct {
@@ -32,25 +35,40 @@ typedef struct {
 
 #define SETTINGS_FIXED_SIZE(settings) (settings.flags & FLAG_FIXED_SIZE)
 
-static void setArgs(Settings *settings, int argc, const char *argv[]) {
+static void parseArgs(Settings *settings, int argc, const char *argv[]) {
     /* init settings */
     settings->flags = 0;
     settings->width = 0;
     settings->height = 0;
 
-    if (argc == 3) {
-        int w, h;
-        if (sscanf(argv[1], "%d", &w) == 1 && sscanf(argv[2], "%d", &h) == 1) {
-            settings->flags |= FLAG_FIXED_SIZE;
-            settings->width = w;
-            settings->height = h;
+    for (int i=1; i<argc; i++) {
+        if (strcmp(argv[i] , "--agent0") == 0) {
+            settings->flags |= FLAG_AGENT_0;
+            continue;
         }
+        if (strcmp(argv[i] , "--agent1") == 0) {
+            settings->flags |= FLAG_AGENT_1;
+            continue;
+        }
+        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
+            int w, h;
+            if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
+                settings->flags |= FLAG_FIXED_SIZE;
+                settings->width = w;
+                settings->height = h;
+                continue;
+            }
+        }
+        printf("Usage: %s [--agent0] [--agent1] [--dimension <width>x<height>]\n", argv[0]);
+        exit(EXIT_FAILURE);
+
     }
+
 }
 
 int main(int argc, const char *argv[]) {
     Settings settings;
-    setArgs(&settings, argc, argv);
+    parseArgs(&settings, argc, argv);
 
     /* init curses */
     initscr();
@@ -143,8 +161,12 @@ int main(int argc, const char *argv[]) {
             /* the input processing has to be at the end of the game loop
              * because curses doesn't draw anything otherwise */
             gameProcessInput(&game);
-            agentMakeMove(&agent, 0);
-            agentMakeMove(&agent, 1);
+            if (settings.flags & FLAG_AGENT_0) {
+                agentMakeMove(&agent, 0);
+            }
+            if (settings.flags & FLAG_AGENT_1) {
+                agentMakeMove(&agent, 1);
+            }
         }
         
         erase();

@@ -243,8 +243,8 @@ void agentMakeMove(Agent *agent, int playerIdx) {
         int score = negamax(player, 10, agent->game, &bestMove, 0, NULL);
         fprintf(stderr, "  score: %d\n", score);
         fprintf(stderr, "  move: %d\n", bestMove);
-        agent->game->snake[playerIdx].dir += bestMove;
-        agent->game->snake[playerIdx].dir %= 4;
+        Direction dir = (agent->game->snake[playerIdx].dir + bestMove) % 4;
+        agent->game->playerInput[playerIdx] = dir;
         return;
     }
     /* otherwise try to find a way to the item if it's alive */
@@ -255,7 +255,7 @@ void agentMakeMove(Agent *agent, int playerIdx) {
         if (dir != -1) {
             fprintf(stderr, "  found path\n");
             fprintf(stderr, "  new dir: %d\n", dir);
-            snakeChangeDirection(snake, dir);
+            agent->game->playerInput[playerIdx] = dir;
             return;
         }
     }
@@ -264,7 +264,6 @@ void agentMakeMove(Agent *agent, int playerIdx) {
     int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
     fprintf(stderr, "  score: %d\n", score);
     fprintf(stderr, "  move: %d\n", bestMove);
-    agent->game->snake[playerIdx].dir += bestMove;
-    agent->game->snake[playerIdx].dir %= 4;
-
+    Direction dir = (agent->game->snake[playerIdx].dir + bestMove) % 4;
+    agent->game->playerInput[playerIdx] = dir;
 }

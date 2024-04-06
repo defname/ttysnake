@@ -31,7 +31,6 @@ void gameProcessInput(Game *game) {
                 game->running = 0;
                 fprintf(stderr, "Game quit by user\n");
                 break;
-    /*
             case KEY_LEFT:
                 game->playerInput[0] = LEFT;
                 break;
@@ -56,7 +55,6 @@ void gameProcessInput(Game *game) {
             case 's':
                 game->playerInput[1] = DOWN;
                 break;
-    */
         }
 //    }
 
