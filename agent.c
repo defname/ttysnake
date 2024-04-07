@@ -23,20 +23,24 @@ void agentInit(Agent *agent, Game *game) {
 }
 
 static int evaluate(const Game *game, const Game *prevGame, int player) {
-    if (!game->running) { /* if there is a winner */
-        if (game->winner == -1) return -500;
-        return game->winner == player ? 10000000 : -10000000;
-    }
-    return 0;
-
     int enemy = (player + 1) % 2;
+    int playerAlive = game->snake[player].alive;
+    int enemyAlive = game->snake[enemy].alive;
+
+    if (!playerAlive) {
+        return enemyAlive ? -1000000 : -5000;
+    }
+    if (playerAlive && !enemyAlive) {
+        return 10000000;
+
+    }
+    
     const Snake *snake = &game->snake[player];
-    const Item *item = &game->item;
 
     if (prevGame != NULL && snake->length > prevGame->snake[player].length) {
-        return 1000;
+        return 10000;
     }
-    return -50;
+    return game->iteration;
 }
 
 static Game copyGame(const Game *game) {
@@ -201,30 +205,32 @@ static int negamax(int player, int depth, const Game *game, Move *bestMove, int 
     /* the snakes in the Game object are indexed with 0 and 1,
      * the negamax function needs players to be -1 and 1.
      */
+    Game localGame = copyGame(game);
+    if (depth % 2 == 0) {
+        gameUpdate(&localGame);
+    }
+
     int playerIdx = PLAYER_NEGAMAX_TO_IDX(player);
+    int enemyIdx = (playerIdx+1)%2;
     if (depth == 0 || !game->running) {
         return evaluate(game, prevGame, playerIdx);
     }
     int maxScore = INT_MIN;
-    Game localGame = copyGame(game);
 
-    for (int i=0; i<3; i++) {
-        Move move = moveOrder[i];
+    for (int i=0; i<3; i++) { /* own move id */
+        Move playerMove = moveOrder[i];
+
 
         /* make move and update local game state */
-        localGame.snake[playerIdx].dir += move;
-        localGame.snake[playerIdx].dir %= 4;
-        gameUpdate(&localGame);
+        localGame.playerInput[playerIdx] = (localGame.snake[playerIdx].dir + playerMove) % 4;
 
         /* next players turn */
         int score = -negamax(-player, depth-1, &localGame, bestMove, rDepth+1, game);
-        /* undo move for next try */
-        localGame = copyGame(game);
 
         if (score > maxScore) {
             maxScore = score;
             if (rDepth == 0) {
-                *bestMove = move;
+                *bestMove = playerMove;
             }
         }
     }
@@ -238,7 +244,7 @@ void agentMakeMove(Agent *agent, int playerIdx) {
     /* If the enemy is near try to make a clever move */
     if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < 10) {
         logMsg("%d near enemy...\n", playerIdx);
-        int score = negamax(player, 10, agent->game, &bestMove, 0, NULL);
+        int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
         logMsg("  score: %d\n", score);
         logMsg("  move: %d\n", bestMove);
         agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
