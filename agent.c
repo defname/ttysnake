@@ -25,9 +25,9 @@ void agentInit(Agent *agent, Game *game) {
 static int evaluate(const Game *game, const Game *prevGame, int player) {
     if (!game->running) { /* if there is a winner */
         if (game->winner == -1) return -500;
-        return game->winner == player ? 1000000 : -1000000;
+        return game->winner == player ? 10000000 : -10000000;
     }
-    return game->iteration;
+    return 0;
 
     int enemy = (player + 1) % 2;
     const Snake *snake = &game->snake[player];
@@ -41,8 +41,6 @@ static int evaluate(const Game *game, const Game *prevGame, int player) {
 
 static Game copyGame(const Game *game) {
     Game copy = *game;
-
-    copy.isCopy = 1;
 
     return copy;
 }
@@ -173,9 +171,9 @@ static int bfs(Game *game, Position startPos, Position endPos) {
     if (diff == width) return DOWN;
     if (diff == -width) return UP;
  
-    fprintf(stderr, "Should not happen\n");
-    fprintf(stderr, "width: %d\n", width);
-    fprintf(stderr, "diff: %d\n", diff);
+    logMsg("Should not happen\n");
+    logMsg("width: %d\n", width);
+    logMsg("diff: %d\n", diff);
     exit(123);
     
 #undef INF
@@ -239,31 +237,30 @@ void agentMakeMove(Agent *agent, int playerIdx) {
 
     /* If the enemy is near try to make a clever move */
     if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < 10) {
-        fprintf(stderr, "%d near enemy...\n", playerIdx);
+        logMsg("%d near enemy...\n", playerIdx);
         int score = negamax(player, 10, agent->game, &bestMove, 0, NULL);
-        fprintf(stderr, "  score: %d\n", score);
-        fprintf(stderr, "  move: %d\n", bestMove);
-        Direction dir = (agent->game->snake[playerIdx].dir + bestMove) % 4;
-        agent->game->playerInput[playerIdx] = dir;
+        logMsg("  score: %d\n", score);
+        logMsg("  move: %d\n", bestMove);
+        agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
         return;
     }
     /* otherwise try to find a way to the item if it's alive */
     if (itemAlive(&agent->game->item)) {
-        fprintf(stderr, "%d pathfinding...\n", playerIdx);
+        logMsg("%d pathfinding...\n", playerIdx);
         Snake *snake = &agent->game->snake[playerIdx];
         Direction dir = bfs(agent->game, snake->body[0], agent->game->item.pos);
         if (dir != -1) {
-            fprintf(stderr, "  found path\n");
-            fprintf(stderr, "  new dir: %d\n", dir);
+            logMsg("  found path\n");
+            logMsg("  new dir: %d\n", dir);
             agent->game->playerInput[playerIdx] = dir;
             return;
         }
     }
     /* otherwise try not to die */
-    fprintf(stderr, "%d don't die...\n", playerIdx);
+    logMsg("%d don't die...\n", playerIdx);
     int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
-    fprintf(stderr, "  score: %d\n", score);
-    fprintf(stderr, "  move: %d\n", bestMove);
-    Direction dir = (agent->game->snake[playerIdx].dir + bestMove) % 4;
-    agent->game->playerInput[playerIdx] = dir;
+    logMsg("  score: %d\n", score);
+    logMsg("  move: %d\n", bestMove);
+    agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
+    return;
 }

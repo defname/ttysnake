@@ -19,8 +19,8 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
     itemInit(&game->item, 0, vec2Init(10, 10));
 
     int centerY = *game->screenHeight /2;
-    snakeInit(&game->snake[0], 5, *game->screenWidth-6, centerY, LEFT);
-    snakeInit(&game->snake[1], 5, 6, centerY, RIGHT);
+    snakeInit(&game->snake[0], 0, 5, *game->screenWidth-6, centerY, LEFT);
+    snakeInit(&game->snake[1], 1, 5, 6, centerY, RIGHT);
 }
 
 void gameProcessInput(Game *game) {
@@ -29,7 +29,7 @@ void gameProcessInput(Game *game) {
         switch (k) {
             case 'q':
                 game->running = 0;
-                fprintf(stderr, "Game quit by user\n");
+                logMsg("Game quit by user\n");
                 break;
             case KEY_LEFT:
                 game->playerInput[0] = LEFT;

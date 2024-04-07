@@ -1,5 +1,4 @@
 #include <curses.h>
-#include <stdio.h>
 #include "snake.h"
 
 /**
@@ -12,8 +11,9 @@ static int addRespectingLimits(int a, int b, int lowerLimit, int upperLimit) {
     return result;
 }
 
-void snakeInit(Snake *snake, int length, int startX, int startY, Direction dir) {
+void snakeInit(Snake *snake, int id, int length, int startX, int startY, Direction dir) {
     Position position = {startX, startY};
+    snake->id = id;
     snake->length = length;
     snake->dir = dir;
     snake->alive = 1;

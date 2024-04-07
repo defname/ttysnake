@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdarg.h>
+#include <time.h>
 #include "helper.h"
 
 Vec2 vec2Init(int x, int y) {
@@ -56,4 +59,55 @@ Vec2 vec2Random(int ll, int lr, int lt, int lb) {
 
 int vec2Equal(Vec2 a, Vec2 b) {
     return a.x == b.x && a.y == b.y;
+}
+
+void parseArgs(Settings *settings, int argc, const char *argv[]) {
+    /* init settings */
+    settings->flags = 0;
+    settings->width = 0;
+    settings->height = 0;
+    settings->seed = time(NULL);
+
+    for (int i=1; i<argc; i++) {
+        if (strcmp(argv[i] , "--agent0") == 0) {
+            settings->flags |= FLAG_AGENT_0;
+            continue;
+        }
+        if (strcmp(argv[i] , "--agent1") == 0) {
+            settings->flags |= FLAG_AGENT_1;
+            continue;
+        }
+        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
+            int w, h;
+            if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
+                settings->flags |= FLAG_FIXED_SIZE;
+                settings->width = w;
+                settings->height = h;
+                continue;
+            }
+        }
+        if (strcmp(argv[i], "--seed") == 0 && argc > i+1) {
+            int seed;
+            if (sscanf(argv[++i], "%d", &seed) == 1) {
+                settings->seed = seed;
+                continue;
+            }
+        }
+        if (strcmp(argv[i], "--log") == 0) {
+            settings->flags |= FLAG_LOG;
+            continue;
+        }
+        printf("Usage: %s [--agent0] [--agent1] [--log] [--dimension <width>x<height>] [--seed <seed>]\n", argv[0]);
+        exit(EXIT_FAILURE);
+
+    }
+
+}
+
+void logMsg(const char *fmt, ...) {
+    if (!(settings.flags & FLAG_LOG)) return;
+    va_list args;
+    va_start(args, fmt);
+    int rc = vfprintf(stderr, fmt, args);
+    va_end(args);
 }

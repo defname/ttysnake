@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "helper.h"
 #include "item.h"
 #include "snake.h"
 
@@ -8,6 +9,8 @@ typedef struct {
     /* pointer to variables holding the current screen dimensions */
     int *screenWidth;
     int *screenHeight;
+
+    Settings *settings;
 
     /* number of iterations of the game loop */
     int iteration;

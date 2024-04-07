@@ -21,53 +21,9 @@
 #include "game.h"
 #include "agent.h"
 
-enum {
-    FLAG_FIXED_SIZE     = 1,
-    FLAG_AGENT_0        = 2,
-    FLAG_AGENT_1        = 4
-};
-
-typedef struct {
-    int flags;
-    int width;
-    int height;
-} Settings;
-
-#define SETTINGS_FIXED_SIZE(settings) (settings.flags & FLAG_FIXED_SIZE)
-
-static void parseArgs(Settings *settings, int argc, const char *argv[]) {
-    /* init settings */
-    settings->flags = 0;
-    settings->width = 0;
-    settings->height = 0;
-
-    for (int i=1; i<argc; i++) {
-        if (strcmp(argv[i] , "--agent0") == 0) {
-            settings->flags |= FLAG_AGENT_0;
-            continue;
-        }
-        if (strcmp(argv[i] , "--agent1") == 0) {
-            settings->flags |= FLAG_AGENT_1;
-            continue;
-        }
-        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
-            int w, h;
-            if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
-                settings->flags |= FLAG_FIXED_SIZE;
-                settings->width = w;
-                settings->height = h;
-                continue;
-            }
-        }
-        printf("Usage: %s [--agent0] [--agent1] [--dimension <width>x<height>]\n", argv[0]);
-        exit(EXIT_FAILURE);
-
-    }
-
-}
+Settings settings;
 
 int main(int argc, const char *argv[]) {
-    Settings settings;
     parseArgs(&settings, argc, argv);
 
     /* init curses */
@@ -81,7 +37,8 @@ int main(int argc, const char *argv[]) {
     leaveok(stdscr, TRUE);
     curs_set(0);
 
-    srand(time(NULL));
+    logMsg("Seed: %d\n", settings.seed);
+    srand(settings.seed);
 
     /* init colors */
     if (has_colors()) {
@@ -93,10 +50,10 @@ int main(int argc, const char *argv[]) {
         init_pair(COLOR_LOGO, COLOR_BLUE, COLOR_BLACK);
     }
 
-    /* screen dimensions (updated every iteration) */
+    /* screen dimensions */
     int height;
     int width;
-    if (SETTINGS_FIXED_SIZE(settings)) {
+    if (settings.flags & FLAG_FIXED_SIZE) {
         width = settings.width;
         height = settings.height;
     }
@@ -105,6 +62,9 @@ int main(int argc, const char *argv[]) {
     }
 
     int exit = 0;
+    
+    /* used to determine the first iteration of game.running = 0 */
+    int gameJustStopped = 0;
 
     Game game;
     gameInit(&game, &width, &height);
@@ -113,14 +73,18 @@ int main(int argc, const char *argv[]) {
     agentInit(&agent, &game);
 
     for (; !exit; game.iteration++) {
-        if (!SETTINGS_FIXED_SIZE(settings)) {
+        /* update screen dimensions */
+        if (!(settings.flags & FLAG_FIXED_SIZE)) {
             getmaxyx(stdscr, height, width);
         }
     
         if (!game.running) { /* show menu */
-            fprintf(stderr, "winner: %d\n", game.winner);
-            fprintf(stderr, "alive?  snake0: %d snake1: %d\n", game.snake[0].alive, game.snake[1].alive);
-            fprintf(stderr, "dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
+            if (gameJustStopped == 1) {
+                logMsg("winner: %d\n", game.winner);
+                logMsg("alive?  snake0: %d snake1: %d\n", game.snake[0].alive, game.snake[1].alive);
+                logMsg("dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
+                gameJustStopped = 0;
+            }
 
             /* let the winning snake continue crawling around */
             int snakeIdx = game.winner == -1 ? 0 : game.winner;
@@ -167,6 +131,10 @@ int main(int argc, const char *argv[]) {
             if (settings.flags & FLAG_AGENT_1) {
                 agentMakeMove(&agent, 1);
             }
+
+            if (!game.running) {
+                gameJustStopped = 1;
+            }
         }
         
         erase();
@@ -174,9 +142,5 @@ int main(int argc, const char *argv[]) {
     clear();
     endwin();
 
-    printf("winner: %d\n", game.winner);
-    printf("snake 0: %d\n", game.snake[0].length);
-    printf("snake 1: %d\n", game.snake[1].length);
-    
-    return 0;
+    return EXIT_SUCCESS;
 }
