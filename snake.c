@@ -87,6 +87,10 @@ void snakeDraw(Snake *snake) {
     Vec2 d = vec2Sub(current, next);
     if (d.x == 0)   symbol = ACS_VLINE;
     else            symbol = ACS_HLINE;
+
+    if (snake->alive == 0) {
+        mvaddch(snake->body[0].y, snake->body[0].x, 'X');
+    }
 }
 
 int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height) {
