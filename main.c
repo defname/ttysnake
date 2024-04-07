@@ -69,8 +69,11 @@ int main(int argc, const char *argv[]) {
     Game game;
     gameInit(&game, &width, &height);
 
-    Agent agent;
-    agentInit(&agent, &game);
+    Game backgroundGame;
+    gameInit(&backgroundGame, &width, &height);
+    backgroundGame.state = GAME_RUNNING;
+    int backgroundGameDelay = 100;
+
 
     for (; !exit;) {
         /* update screen dimensions */
@@ -87,26 +90,29 @@ int main(int argc, const char *argv[]) {
                     logMsg("dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
                     gameJustStopped = 0;
                 }
-
-                /* let the winning snake continue crawling around */
-                int snakeIdx = game.winner == -1 ? 0 : game.winner;
-                Snake *snake = &game.snake[snakeIdx];
-                int snakeColor = snakeIdx == 0 ? COLOR_SNAKE0 : COLOR_SNAKE1;
-                snakeColor = game.winner != -1 ? snakeColor : COLOR_DRAW;
-                /* change the direction randomly */
-                if (game.iteration % (rand()%50+1) == 0) {
-                    snake->dir += rand()%2 ? -1 : 1;
-                    snake->dir %= 4;
-                }
-                snakeMove(snake, width, height);
-
+                
                 /* draw stuff */
                 printMainMenu(width, height);
-                SET_COLOR(snakeColor);
-                snakeDraw(snake);
-                UNSET_COLOR(snakeColor);
 
-                napms(100);
+                if (backgroundGame.state == GAME_RUNNING) {
+                    backgroundGameDelay = 40;
+
+                    gameUpdate(&backgroundGame);
+                    gameDraw(&backgroundGame);
+
+                    agentMakeMove(&backgroundGame, 0, 3);
+                    agentMakeMove(&backgroundGame, 1, 3);
+                }
+                else {
+                    gameDraw(&backgroundGame);
+                    backgroundGameDelay--;
+                    if (backgroundGameDelay == 0) {
+                        gameInit(&backgroundGame, &width, &height);
+                        backgroundGame.state = GAME_RUNNING;
+                    }
+                }
+
+                napms(settings.delay);
 
                 /* process input */
                 int k = wgetch(stdscr);
@@ -130,10 +136,10 @@ int main(int argc, const char *argv[]) {
                  * because curses doesn't draw anything otherwise */
                 gameProcessInput(&game);
                 if (settings.flags & FLAG_AGENT_0) {
-                    agentMakeMove(&agent, 0, settings.agent0);
+                    agentMakeMove(&game, 0, settings.agent0);
                 }
                 if (settings.flags & FLAG_AGENT_1) {
-                    agentMakeMove(&agent, 1, settings.agent1);
+                    agentMakeMove(&game, 1, settings.agent1);
                 }
 
                 if (game.state == GAME_EXIT) {
@@ -145,7 +151,7 @@ int main(int argc, const char *argv[]) {
             case GAME_PAUSED: {
                 gameDraw(&game);
                 printPause(width, height);
-                napms(100);
+                napms(settings.delay);
                 int k = getch();
                 if (k == ' ') {
                     game.state = GAME_RUNNING;

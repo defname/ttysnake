@@ -50,6 +50,7 @@ typedef struct _Game{
 #define FIX_WINNER(game, winner) (game->snake[0].dir == OPPOSITE_DIR(game->snake[1].dir) ? -1 : winner)
 
 void gameInit(Game *game, int *scrWidth, int *scrHeight);
+int gamePositionFree(Game *game, int x, int y);
 void gameUpdate(Game *game);
 void gameDraw(Game *game);
 void gameProcessInput(Game *game);

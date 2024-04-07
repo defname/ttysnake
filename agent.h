@@ -3,11 +3,6 @@
 
 #include "game.h"
 
-typedef struct {
-    Game *game;
-} Agent;
-
-void agentInit(Agent *agent, Game *game);
-void agentMakeMove(Agent *agent, int player, int strength);
+void agentMakeMove(Game *game, int player, int strength);
 
 #endif

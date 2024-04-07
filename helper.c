@@ -74,6 +74,7 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
     settings->seed = time(NULL);
     settings->agent0 = 0;
     settings->agent1 = 0;
+    settings->delay = 200;
 
     for (int i=1; i<argc; i++) {
         if (strcmp(argv[i], "--agent0") == 0 && argc > i+1) {
@@ -92,7 +93,14 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
                 continue;
             }
         }
-if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
+        if (strcmp(argv[i], "--delay") == 0 && argc > i+1) {
+            int delay;
+            if (sscanf(argv[++i], "%d", &delay) == 1) {
+                settings->delay = delay;
+                continue;
+            }
+        }
+        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
             int w, h;
             if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
                 settings->flags |= FLAG_FIXED_SIZE;
@@ -112,7 +120,7 @@ if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
             settings->flags |= FLAG_LOG;
             continue;
         }
-        printf("Usage: %s [--agent0 <N>] [--agent1 <N>] [--log] [--dimension <width>x<height>] [--seed <seed>]\n", argv[0]);
+        printf("Usage: %s [--agent0 <N>] [--agent1 <N>] [--log] [--dimension <width>x<height>] [--seed <seed>] [--delay <seconds>]\n", argv[0]);
         exit(EXIT_FAILURE);
 
     }

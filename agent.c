@@ -18,9 +18,6 @@ Move moveOrder[3] = {MOVE_FORWARD, MOVE_LEFT, MOVE_RIGHT};
 #define PLAYER_IDX_TO_NEGAMAX(playerIdx) ((playerIdx) == 0 ? -1 : 1)
 #define PLAYER_NEGAMAX_TO_IDX(player)    ((player) == -1 ? 0 : 1)
 
-void agentInit(Agent *agent, Game *game) {
-    agent->game = game;
-}
 
 static void shuffleMoveOrder(const Move *moves, Move *newOrder) {
     for (int i=0; i<3; i++) {
@@ -68,18 +65,6 @@ static Game copyGame(const Game *game) {
     return copy;
 }
 
-static int isPassable(Game *game, int x, int y) {
-    if (x <= 0 || x >= *game->screenWidth-1) return 0;
-    if (y <= 0 || y >= *game->screenHeight-1) return 0;
-    for (int pIdx=0; pIdx<2; pIdx++) {
-        Snake *snake = &game->snake[pIdx];
-        for (int i=0; i<snake->length; i++) {
-            if (snake->body[i].x == x && snake->body[i].y == y) return 0;
-        }
-    }
-    return 1;
-}
-
 /**
  * Perform a breadth-first-search and return the direction to choose.
  * Return -1 if no path is found
@@ -123,7 +108,7 @@ static int bfs(Game *game, Position startPos, Position endPos) {
     /* initialize lists */
     for (int y=0; y<height; y++) {
         for (int x=0; x<width; x++) {
-            passable[XY2IDX(x, y)] = isPassable(game, x, y);
+            passable[XY2IDX(x, y)] = gamePositionFree(game, x, y);
         }
     }
     for (int i=0; i<MAX; i++) {
@@ -267,37 +252,37 @@ static int negamax(int player, int depth, const Game *game, Move *bestMove, int 
     return maxScore;
 }
 
-void agentMakeMove(Agent *agent, int playerIdx, int strength) {
+void agentMakeMove(Game *game, int playerIdx, int strength) {
     Move bestMove = MOVE_FORWARD;
     int player = PLAYER_IDX_TO_NEGAMAX(playerIdx);
     int lookahead = strength*2 + 1;
 
     /* If the enemy is near try to make a clever move */
-    if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < lookahead) {
+    if (vec2Dist(game->snake[0].body[0], game->snake[1].body[0]) < lookahead) {
         logMsg("%d near enemy...\n", playerIdx);
-        int score = negamax(player, lookahead, agent->game, &bestMove, 0);
+        int score = negamax(player, lookahead, game, &bestMove, 0);
         logMsg("  score: %d\n", score);
         logMsg("  move: %d\n", bestMove);
-        agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
+        game->playerInput[playerIdx] = (game->snake[playerIdx].dir + bestMove) % 4;
         return;
     }
     /* otherwise try to find a way to the item if it's alive */
-    if (itemAlive(&agent->game->item)) {
+    if (itemAlive(&game->item)) {
         logMsg("%d pathfinding...\n", playerIdx);
-        Snake *snake = &agent->game->snake[playerIdx];
-        Direction dir = bfs(agent->game, snake->body[0], agent->game->item.pos);
+        Snake *snake = &game->snake[playerIdx];
+        Direction dir = bfs(game, snake->body[0], game->item.pos);
         if (dir != -1) {
             logMsg("  found path\n");
             logMsg("  new dir: %d\n", dir);
-            agent->game->playerInput[playerIdx] = dir;
+            game->playerInput[playerIdx] = dir;
             return;
         }
     }
     /* otherwise try not to die */
     logMsg("%d don't die...\n", playerIdx);
-    int score = negamax(player, lookahead, agent->game, &bestMove, 0);
+    int score = negamax(player, lookahead, game, &bestMove, 0);
     logMsg("  score: %d\n", score);
     logMsg("  move: %d\n", bestMove);
-    agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
+    game->playerInput[playerIdx] = (game->snake[playerIdx].dir + bestMove) % 4;
     return;
 }

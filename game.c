@@ -63,6 +63,18 @@ void gameProcessInput(Game *game) {
 
 }
 
+int gamePositionFree(Game *game, int x, int y) {
+    if (x <= 0 || x >= *game->screenWidth-1) return 0;
+    if (y <= 0 || y >= *game->screenHeight-1) return 0;
+    for (int pIdx=0; pIdx<2; pIdx++) {
+        Snake *snake = &game->snake[pIdx];
+        for (int i=0; i<snake->length; i++) {
+            if (snake->body[i].x == x && snake->body[i].y == y) return 0;
+        }
+    }
+    return 1;
+}
+
 void gameUpdate(Game *game) {
     int width = *game->screenWidth;
     int height = *game->screenHeight;
@@ -116,7 +128,11 @@ void gameUpdate(Game *game) {
     else if (game->itemDropDelay > 0) game->itemDropDelay--;
     else {
         game->itemDropDelay = 1;
-        itemInit(&game->item, 100, vec2Random(1, width-1, 1, height-1));
+        Position newItemPos = vec2Random(1, width-1, 1, height-1);
+        while (!gamePositionFree(game, newItemPos.x, newItemPos.y)) {
+            newItemPos = vec2Random(1, width-1, 1, height-1);
+        }
+        itemInit(&game->item, 100, newItemPos);
     }
     
     game->iteration++;

@@ -34,6 +34,7 @@ typedef struct {
     int seed;
     int agent0;
     int agent1;
+    int delay;
 } Settings;
 
 extern Settings settings;

@@ -50,9 +50,7 @@ void snakeDraw(Snake *snake) {
         next = snake->body[i+1];
 
         Vec2 a = vec2Sub(last, current);
-        logMsg("diff %d/%d\n", a.x, a.y);
         Vec2 b = vec2Sub(current, next);
-        logMsg("     %d/%d\n", b.x, b.y);
         symbol = 'x';
         if (a.x == 0 && b.x == 0) {
             symbol = ACS_VLINE;
