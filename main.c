@@ -95,7 +95,7 @@ int main(int argc, const char *argv[]) {
                 printMainMenu(width, height);
 
                 if (backgroundGame.state == GAME_RUNNING) {
-                    backgroundGameDelay = 40;
+                    backgroundGameDelay = 5;
 
                     gameUpdate(&backgroundGame);
                     gameDraw(&backgroundGame);

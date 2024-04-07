@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include "helper.h"
+#include "common.h"
 
 Vec2 vec2Init(int x, int y) {
     Vec2 a = {x, y};
@@ -100,7 +101,7 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
                 continue;
             }
         }
-        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
+        if (strcmp(argv[i], "--dimensions") == 0 && argc > i+1) {
             int w, h;
             if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
                 settings->flags |= FLAG_FIXED_SIZE;
@@ -120,7 +121,8 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
             settings->flags |= FLAG_LOG;
             continue;
         }
-        printf("Usage: %s [--agent0 <N>] [--agent1 <N>] [--log] [--dimension <width>x<height>] [--seed <seed>] [--delay <seconds>]\n", argv[0]);
+        printf("USAGE: %s [arguments...]\n", argv[0]);
+        printf(HELP_TEXT);
         exit(EXIT_FAILURE);
 
     }
