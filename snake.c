@@ -40,9 +40,55 @@ void snakeChangeDirection(Snake *snake, Direction dir) {
 }
 
 void snakeDraw(Snake *snake) {
-    for (int i=0; i<snake->length; i++) {
-        mvaddch(snake->body[i].y, snake->body[i].x, SNAKE_SYMBOL);
+    int symbol = SNAKE_SYMBOL;
+    mvaddch(snake->body[0].y, snake->body[0].x, symbol);
+    Position last, current, next;
+
+    for (int i=1; i<snake->length-1; i++) {
+        last = snake->body[i-1];
+        current = snake->body[i];
+        next = snake->body[i+1];
+
+        Vec2 a = vec2Sub(last, current);
+        logMsg("diff %d/%d\n", a.x, a.y);
+        Vec2 b = vec2Sub(current, next);
+        logMsg("     %d/%d\n", b.x, b.y);
+        symbol = 'x';
+        if (a.x == 0 && b.x == 0) {
+            symbol = ACS_VLINE;
+        }
+        else if (a.y == 0 && b.y == 0) {
+            symbol = ACS_HLINE;
+        }
+        else if (a.x == 1 && b.y == 1) {
+            symbol = ACS_LLCORNER;
+        }
+        else if (a.x == -1 && b.y == 1) {
+            symbol = ACS_LRCORNER;
+        }
+        else if (a.x == 1 && b.y == -1) {
+            symbol = ACS_ULCORNER;
+        }
+        else if (a.x == -1 && b.y == -1) {
+            symbol = ACS_URCORNER;
+        }
+        else if (a.y == 1 && b.x == 1) {
+            symbol = ACS_URCORNER;
+        }
+        else if (a.y == -1 && b.x == 1) {
+            symbol = ACS_LRCORNER;
+        }
+        else if (a.y == 1 && b.x == -1) {
+            symbol = ACS_ULCORNER;
+        }
+        else if (a.y == -1 && b.x == -1) {
+            symbol = ACS_LLCORNER;
+        }
+        mvaddch(snake->body[i].y, snake->body[i].x, symbol);
     }
+    Vec2 d = vec2Sub(current, next);
+    if (d.x == 0)   symbol = ACS_VLINE;
+    else            symbol = ACS_HLINE;
 }
 
 int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height) {

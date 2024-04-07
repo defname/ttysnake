@@ -40,6 +40,7 @@ extern Settings settings;
 
 Vec2 vec2Init(int x, int y);
 Vec2 vec2Add(Vec2 a, Vec2 b);
+Vec2 vec2Sub(Vec2 a, Vec2 b);
 Vec2 vec2Mul(Vec2 a, int s);
 unsigned int vec2Dist(Vec2 a, Vec2 b);
 Vec2 dirToVec2(Direction dir);

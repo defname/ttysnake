@@ -13,6 +13,11 @@ Vec2 vec2Add(Vec2 a, Vec2 b) {
     return result;
 }
 
+Vec2 vec2Sub(Vec2 a, Vec2 b) {
+    Vec2 result = {a.x-b.x, a.y-b.y};
+    return result;
+}
+
 Vec2 vec2Mul(Vec2 a, int s) {
     Vec2 result = {a.x * s, a.y * s};
     return result;
