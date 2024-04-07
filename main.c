@@ -131,7 +131,7 @@ int main(int argc, const char *argv[]) {
 
                 gameDraw(&game);
                 
-                napms(100);
+                napms(settings.delay);
                 /* the input processing has to be at the end of the game loop
                  * because curses doesn't draw anything otherwise */
                 gameProcessInput(&game);
