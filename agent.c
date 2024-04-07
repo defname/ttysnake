@@ -22,29 +22,48 @@ void agentInit(Agent *agent, Game *game) {
     agent->game = game;
 }
 
-static int evaluate(const Game *game, const Game *prevGame, int player) {
+static void shuffleMoveOrder(const Move *moves, Move *newOrder) {
+    for (int i=0; i<3; i++) {
+        newOrder[i] = moves[i];
+    }
+    Move m;
+    for (int i=0; i<3; i++) {
+        int j=rand()%3;
+        m = newOrder[i];
+        newOrder[i] = newOrder[j];
+        newOrder[j] = m;
+    }
+}
+
+static int evaluate(const Game *game, int player) {
     int enemy = (player + 1) % 2;
     int playerAlive = game->snake[player].alive;
     int enemyAlive = game->snake[enemy].alive;
 
     if (!playerAlive) {
-        return enemyAlive ? -1000000 : -5000;
+        return enemyAlive ? INT_MIN + 1 : INT_MIN+1000;
     }
     if (playerAlive && !enemyAlive) {
-        return 10000000;
-
+        return INT_MAX;
     }
     
     const Snake *snake = &game->snake[player];
 
-    if (prevGame != NULL && snake->length > prevGame->snake[player].length) {
-        return 10000;
+    const Game *prevGame = NULL;
+    if (game->copyOf != NULL && game->copyOf->copyOf != NULL) {
+        prevGame = game->copyOf->copyOf;
     }
+
+    if (prevGame != NULL && snake->length > prevGame->snake[player].length) {
+        return INT_MAX - 100;
+    }
+
     return game->iteration;
 }
 
 static Game copyGame(const Game *game) {
     Game copy = *game;
+    copy.copyOf = game;
 
     return copy;
 }
@@ -136,6 +155,12 @@ static int bfs(Game *game, Position startPos, Position endPos) {
         /* check neighbours */
         /* right, left, bottom, top */
         int neighbours[4] = {current+1, current-1, current+width, current-width};
+        /* little reorder of the neighbours for more interesting paths */
+        int idx1 = rand() % 4;
+        int idx2 = rand() % 4;
+        int b = neighbours[idx1];
+        neighbours[idx1] = neighbours[idx2];
+        neighbours[idx2] = b;
         for (int i=0; i<4; i++) {
             int next = neighbours[i];
             
@@ -176,9 +201,11 @@ static int bfs(Game *game, Position startPos, Position endPos) {
     if (diff == -width) return UP;
  
     logMsg("Should not happen\n");
-    logMsg("width: %d\n", width);
-    logMsg("diff: %d\n", diff);
-    exit(123);
+    logMsg("  before: %d, pos: %d\n", before, pos);
+    logMsg("  width: %d\n", width);
+    logMsg("  diff: %d\n", diff);
+    logMsg("  Returning DOWN\n");
+    return DOWN;
     
 #undef INF
 #undef MAX
@@ -201,7 +228,7 @@ static int bfs(Game *game, Position startPos, Position endPos) {
  * @param prevGame has to be NULL
  * @return The score for the player.
  */
-static int negamax(int player, int depth, const Game *game, Move *bestMove, int rDepth, const Game *prevGame) {
+static int negamax(int player, int depth, const Game *game, Move *bestMove, int rDepth) {
     /* the snakes in the Game object are indexed with 0 and 1,
      * the negamax function needs players to be -1 and 1.
      */
@@ -212,20 +239,23 @@ static int negamax(int player, int depth, const Game *game, Move *bestMove, int 
 
     int playerIdx = PLAYER_NEGAMAX_TO_IDX(player);
     int enemyIdx = (playerIdx+1)%2;
-    if (depth == 0 || !game->running) {
-        return evaluate(game, prevGame, playerIdx);
+    if (depth == 0 || game->state == GAME_OVER) {
+        return evaluate(game, playerIdx);
     }
     int maxScore = INT_MIN;
 
+    Move randomMoveOrder[3];
+    shuffleMoveOrder(moveOrder, randomMoveOrder);
+
     for (int i=0; i<3; i++) { /* own move id */
-        Move playerMove = moveOrder[i];
+        Move playerMove = randomMoveOrder[i];
 
 
         /* make move and update local game state */
         localGame.playerInput[playerIdx] = (localGame.snake[playerIdx].dir + playerMove) % 4;
 
         /* next players turn */
-        int score = -negamax(-player, depth-1, &localGame, bestMove, rDepth+1, game);
+        int score = -negamax(-player, depth-1, &localGame, bestMove, rDepth+1);
 
         if (score > maxScore) {
             maxScore = score;
@@ -237,14 +267,15 @@ static int negamax(int player, int depth, const Game *game, Move *bestMove, int 
     return maxScore;
 }
 
-void agentMakeMove(Agent *agent, int playerIdx) {
+void agentMakeMove(Agent *agent, int playerIdx, int strength) {
     Move bestMove = MOVE_FORWARD;
     int player = PLAYER_IDX_TO_NEGAMAX(playerIdx);
+    int lookahead = strength*2 + 1;
 
     /* If the enemy is near try to make a clever move */
-    if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < 10) {
+    if (vec2Dist(agent->game->snake[0].body[0], agent->game->snake[1].body[0]) < lookahead) {
         logMsg("%d near enemy...\n", playerIdx);
-        int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
+        int score = negamax(player, lookahead, agent->game, &bestMove, 0);
         logMsg("  score: %d\n", score);
         logMsg("  move: %d\n", bestMove);
         agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;
@@ -264,7 +295,7 @@ void agentMakeMove(Agent *agent, int playerIdx) {
     }
     /* otherwise try not to die */
     logMsg("%d don't die...\n", playerIdx);
-    int score = negamax(player, 5, agent->game, &bestMove, 0, NULL);
+    int score = negamax(player, lookahead, agent->game, &bestMove, 0);
     logMsg("  score: %d\n", score);
     logMsg("  move: %d\n", bestMove);
     agent->game->playerInput[playerIdx] = (agent->game->snake[playerIdx].dir + bestMove) % 4;

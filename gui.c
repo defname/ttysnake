@@ -60,9 +60,42 @@ static void rectangle(int y1, int x1, int y2, int x2)
     mvaddch(y1, x2, ACS_URCORNER);
     mvaddch(y2, x2, ACS_LRCORNER);
 }
+
 void printBorder(int width, int height) {
     SET_COLOR(COLOR_BORDER);
     rectangle(0, 0, height-1, width-1);
     UNSET_COLOR(COLOR_BORDER);
 }
 
+void printPause(int width, int height) {
+    SET_COLOR(COLOR_LOGO);
+    mvaddstr(height/2-1, width/2-3, "PAUSE");
+    UNSET_COLOR(COLOR_LOGO);
+}
+
+void printGameOver(Game *game, int width, int height) {
+    SET_COLOR(COLOR_LOGO);
+    mvaddstr(height/2-1, width/2-5, "GAME OVER");
+    UNSET_COLOR(COLOR_LOGO);
+    
+    int y = height/2 + 1;
+
+    if (game->winner == GAME_WINNER_DRAW) {
+        SET_COLOR(COLOR_DRAW);
+        mvaddstr(y, width/2-2, "DRAW");
+        UNSET_COLOR(COLOR_DRAW);
+    }
+    else if (game->winner == 0) {
+        SET_COLOR(COLOR_SNAKE0);
+        mvaddstr(y, width/2-4, "Red won");
+        UNSET_COLOR(COLOR_DRAW);
+    }
+    else if (game->winner == 1) {
+        SET_COLOR(COLOR_SNAKE1);
+        mvaddstr(y, width/2-5, "Green won");
+        UNSET_COLOR(COLOR_DRAW);
+    }
+    else {
+        mvaddstr(y, width/2-7, "Unknown... =/");
+    }
+}

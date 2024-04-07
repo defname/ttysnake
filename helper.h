@@ -32,6 +32,8 @@ typedef struct {
     int width;
     int height;
     int seed;
+    int agent0;
+    int agent1;
 } Settings;
 
 extern Settings settings;

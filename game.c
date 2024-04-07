@@ -6,12 +6,12 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
     game->screenWidth = scrWidth;
     game->screenHeight = scrHeight;
 
-    game->running = 0;
+    game->state = GAME_INITIALIZED;
     game->iteration = 0;
     game->itemDropDelay = 0;
-    game->winner = -1;
+    game->winner = GAME_WINNER_UNDEF;
 
-    game->isCopy = 0;
+    game->copyOf = NULL;
 
     game->playerInput[0] = LEFT;
     game->playerInput[1] =  RIGHT;
@@ -24,12 +24,15 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
 }
 
 void gameProcessInput(Game *game) {
-//    for (int k = wgetch(stdscr); k != ERR; k = getch()) {
+//    for (int k = getch(); k != ERR; k = getch()) {
     int k = getch();
         switch (k) {
             case 'q':
-                game->running = 0;
+                game->state = GAME_EXIT;
                 logMsg("Game quit by user\n");
+                break;
+            case ' ':
+                game->state = GAME_PAUSED;
                 break;
             case KEY_LEFT:
                 game->playerInput[0] = LEFT;
@@ -74,15 +77,30 @@ void gameUpdate(Game *game) {
 
     /* check collisions */
     if (snakeCheckCollision(&game->snake[0], &game->snake[1], width, height)) {
-        game->winner = FIX_WINNER(game, 1);
-        game->running = 0;
+        game->state = GAME_OVER;
         game->snake[0].alive = 0;
     }
     if (snakeCheckCollision(&game->snake[1], &game->snake[0], width, height)) {
-        game->winner = FIX_WINNER(game, 0);
-        game->running = 0;
+        game->state = GAME_OVER;
         game->snake[1].alive = 0;
     }
+
+    /* check if there's a winner */
+    if (game->state == GAME_OVER) {
+        if (game->snake[0].alive == 0 && game->snake[1].alive == 0) {
+            game->winner = GAME_WINNER_DRAW;
+        }
+        else if (game->snake[0].alive == 1 && game->snake[1].alive == 0) {
+            game->winner = 0;
+        }
+        else if (game->snake[0].alive == 0 && game->snake[1].alive == 1) {
+            game->winner = 1;
+        }
+        else {
+            game->winner = GAME_WINNER_ERROR; 
+        }
+    }
+
     /* check item */
     if (itemAlive(&game->item)) {
         if (vec2Equal(game->snake[0].body[0], game->item.pos)) {
@@ -100,13 +118,11 @@ void gameUpdate(Game *game) {
         game->itemDropDelay = 1;
         itemInit(&game->item, 100, vec2Random(1, width-1, 1, height-1));
     }
-
+    
+    game->iteration++;
 }
 
 void gameDraw(Game *game) {
-    /* don't draw the last frame, to prevent drawing snakes over the border*/
-    if (!game->running) return;
-
     /* draw border */
     printBorder(*game->screenWidth, *game->screenHeight);
     //mvprintw(1, 1, "%d", game->snake[0].length);

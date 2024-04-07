@@ -5,7 +5,19 @@
 #include "item.h"
 #include "snake.h"
 
-typedef struct {
+#define GAME_WINNER_DRAW    -1
+#define GAME_WINNER_UNDEF   -100
+#define GAME_WINNER_ERROR   -123
+
+typedef enum {
+    GAME_INITIALIZED,
+    GAME_RUNNING,
+    GAME_PAUSED,
+    GAME_OVER,
+    GAME_EXIT
+} GameState;
+
+typedef struct _Game{
     /* pointer to variables holding the current screen dimensions */
     int *screenWidth;
     int *screenHeight;
@@ -15,7 +27,7 @@ typedef struct {
     /* number of iterations of the game loop */
     int iteration;
     /* indicator if the game is running */
-    int running;
+    GameState state;
     /* delay to wait before a new item is dropped. not used so far */
     int itemDropDelay;
     /* 0, 1 depending on which snake won, -1 on draw */
@@ -31,7 +43,7 @@ typedef struct {
 
     /* indicates that this object is a copy, used by the agent, that
      * creates copies of the game */
-    int isCopy;
+    const struct _Game *copyOf;
 } Game;
 
 /* if both snakes run directly against each other it's a draw */

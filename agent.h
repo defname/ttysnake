@@ -8,6 +8,6 @@ typedef struct {
 } Agent;
 
 void agentInit(Agent *agent, Game *game);
-void agentMakeMove(Agent *agent, int player);
+void agentMakeMove(Agent *agent, int player, int strength);
 
 #endif

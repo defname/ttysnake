@@ -67,17 +67,27 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
     settings->width = 0;
     settings->height = 0;
     settings->seed = time(NULL);
+    settings->agent0 = 0;
+    settings->agent1 = 0;
 
     for (int i=1; i<argc; i++) {
-        if (strcmp(argv[i] , "--agent0") == 0) {
-            settings->flags |= FLAG_AGENT_0;
-            continue;
+        if (strcmp(argv[i], "--agent0") == 0 && argc > i+1) {
+            int strength;
+            if (sscanf(argv[++i], "%d", &strength) == 1) {
+                settings->flags |= FLAG_AGENT_0;
+                settings->agent0 = strength;
+                continue;
+            }
         }
-        if (strcmp(argv[i] , "--agent1") == 0) {
-            settings->flags |= FLAG_AGENT_1;
-            continue;
+        if (strcmp(argv[i], "--agent1") == 0 && argc > i+1) {
+            int strength;
+            if (sscanf(argv[++i], "%d", &strength) == 1) {
+                settings->flags |= FLAG_AGENT_1;
+                settings->agent1 = strength;
+                continue;
+            }
         }
-        if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
+if (strcmp(argv[i], "--dimension") == 0 && argc > i+1) {
             int w, h;
             if (sscanf(argv[++i], "%dx%d", &w, &h) == 2) {
                 settings->flags |= FLAG_FIXED_SIZE;
@@ -97,7 +107,7 @@ void parseArgs(Settings *settings, int argc, const char *argv[]) {
             settings->flags |= FLAG_LOG;
             continue;
         }
-        printf("Usage: %s [--agent0] [--agent1] [--log] [--dimension <width>x<height>] [--seed <seed>]\n", argv[0]);
+        printf("Usage: %s [--agent0 <N>] [--agent1 <N>] [--log] [--dimension <width>x<height>] [--seed <seed>]\n", argv[0]);
         exit(EXIT_FAILURE);
 
     }

@@ -45,7 +45,7 @@ int main(int argc, const char *argv[]) {
         start_color();
         init_pair(COLOR_SNAKE0, COLOR_RED, COLOR_BLACK);
         init_pair(COLOR_SNAKE1, COLOR_GREEN, COLOR_BLACK);
-        init_pair(COLOR_SNAKE_DRAW, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(COLOR_DRAW, COLOR_YELLOW, COLOR_BLACK);
         init_pair(COLOR_ITEM, COLOR_YELLOW, COLOR_BLACK);
         init_pair(COLOR_LOGO, COLOR_BLUE, COLOR_BLACK);
     }
@@ -72,68 +72,98 @@ int main(int argc, const char *argv[]) {
     Agent agent;
     agentInit(&agent, &game);
 
-    for (; !exit; game.iteration++) {
+    for (; !exit;) {
         /* update screen dimensions */
         if (!(settings.flags & FLAG_FIXED_SIZE)) {
             getmaxyx(stdscr, height, width);
         }
     
-        if (!game.running) { /* show menu */
-            if (gameJustStopped == 1) {
-                logMsg("winner: %d\n", game.winner);
-                logMsg("alive?  snake0: %d snake1: %d\n", game.snake[0].alive, game.snake[1].alive);
-                logMsg("dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
-                gameJustStopped = 0;
+        switch (game.state) { /* show menu */
+            case GAME_INITIALIZED:
+            case GAME_EXIT: {
+                if (gameJustStopped == 1) {
+                    logMsg("winner: %d\n", game.winner);
+                    logMsg("alive?  snake0: %d snake1: %d\n", game.snake[0].alive, game.snake[1].alive);
+                    logMsg("dir?    snake0: %d snake1: %d\n\n", game.snake[0].dir, game.snake[1].dir);
+                    gameJustStopped = 0;
+                }
+
+                /* let the winning snake continue crawling around */
+                int snakeIdx = game.winner == -1 ? 0 : game.winner;
+                Snake *snake = &game.snake[snakeIdx];
+                int snakeColor = snakeIdx == 0 ? COLOR_SNAKE0 : COLOR_SNAKE1;
+                snakeColor = game.winner != -1 ? snakeColor : COLOR_DRAW;
+                /* change the direction randomly */
+                if (game.iteration % (rand()%50+1) == 0) {
+                    snake->dir += rand()%2 ? -1 : 1;
+                    snake->dir %= 4;
+                }
+                snakeMove(snake, width, height);
+
+                /* draw stuff */
+                printMainMenu(width, height);
+                SET_COLOR(snakeColor);
+                snakeDraw(snake);
+                UNSET_COLOR(snakeColor);
+
+                napms(100);
+
+                /* process input */
+                int k = wgetch(stdscr);
+                if (k == ' ') {
+                    gameInit(&game, &width, &height);
+                    game.state = GAME_RUNNING;
+                } else if (k == 'q') {
+                    exit = 1;
+                }
+                break;
+            }
+        
+            case GAME_RUNNING: { /* game running */
+                /* update game state */
+                gameUpdate(&game);
+
+                gameDraw(&game);
+                
+                napms(100);
+                /* the input processing has to be at the end of the game loop
+                 * because curses doesn't draw anything otherwise */
+                gameProcessInput(&game);
+                if (settings.flags & FLAG_AGENT_0) {
+                    agentMakeMove(&agent, 0, settings.agent0);
+                }
+                if (settings.flags & FLAG_AGENT_1) {
+                    agentMakeMove(&agent, 1, settings.agent1);
+                }
+
+                if (game.state == GAME_EXIT) {
+                    gameJustStopped = 1;
+                }
+                break;
             }
 
-            /* let the winning snake continue crawling around */
-            int snakeIdx = game.winner == -1 ? 0 : game.winner;
-            Snake *snake = &game.snake[snakeIdx];
-            int snakeColor = snakeIdx == 0 ? COLOR_SNAKE0 : COLOR_SNAKE1;
-            snakeColor = game.winner != -1 ? snakeColor : COLOR_SNAKE_DRAW;
-            /* change the direction randomly */
-            if (game.iteration % (rand()%50+1) == 0) {
-                snake->dir += rand()%2 ? -1 : 1;
-                snake->dir %= 4;
-            }
-            snakeMove(snake, width, height);
-
-            /* draw stuff */
-            printMainMenu(width, height);
-            SET_COLOR(snakeColor);
-            snakeDraw(snake);
-            UNSET_COLOR(snakeColor);
-
-            napms(100);
-
-            /* process input */
-            int k = wgetch(stdscr);
-            if (k == ' ') {
-                gameInit(&game, &width, &height);
-                game.running = 1;
-            } else if (k == 'q') {
-                exit = 1;
-            }
-        }
-        else { /* game running */
-            /* update game state */
-            gameUpdate(&game);
-
-            gameDraw(&game);
-            
-            napms(100);
-            /* the input processing has to be at the end of the game loop
-             * because curses doesn't draw anything otherwise */
-            gameProcessInput(&game);
-            if (settings.flags & FLAG_AGENT_0) {
-                agentMakeMove(&agent, 0);
-            }
-            if (settings.flags & FLAG_AGENT_1) {
-                agentMakeMove(&agent, 1);
+            case GAME_PAUSED: {
+                gameDraw(&game);
+                printPause(width, height);
+                napms(100);
+                int k = getch();
+                if (k == ' ') {
+                    game.state = GAME_RUNNING;
+                    continue;
+                }
+                break;
             }
 
-            if (!game.running) {
-                gameJustStopped = 1;
+            case GAME_OVER: {
+                gameDraw(&game);
+                printGameOver(&game, width, height);
+                napms(100);
+                int k = getch();
+                if (k == ' ') {
+                    game.state = GAME_EXIT;
+                    continue;
+                }
+                break;
             }
         }
         
