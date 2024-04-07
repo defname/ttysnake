@@ -16,5 +16,6 @@ void snakeInit(Snake *snake, int id, int length, int startX, int startY, Directi
 void snakeMove(Snake *snake, int scrWidth, int scrHeight);
 void snakeChangeDirection(Snake *snake, Direction dir);
 void snakeDraw(Snake *snake);
+void snakeDrawHead(Snake *snake);
 int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height);
 #endif

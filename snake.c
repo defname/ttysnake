@@ -41,7 +41,6 @@ void snakeChangeDirection(Snake *snake, Direction dir) {
 
 void snakeDraw(Snake *snake) {
     int symbol = SNAKE_SYMBOL;
-    mvaddch(snake->body[0].y, snake->body[0].x, symbol);
     Position last, current, next;
 
     for (int i=1; i<snake->length-1; i++) {
@@ -87,10 +86,10 @@ void snakeDraw(Snake *snake) {
     Vec2 d = vec2Sub(current, next);
     if (d.x == 0)   symbol = ACS_VLINE;
     else            symbol = ACS_HLINE;
+}
 
-    if (snake->alive == 0) {
-        mvaddch(snake->body[0].y, snake->body[0].x, 'X');
-    }
+void snakeDrawHead(Snake *snake) {
+    mvaddch(snake->body[0].y, snake->body[0].x, snake->alive ? SNAKE_SYMBOL : 'X');
 }
 
 int snakeCheckCollision(Snake *snake, Snake *enemy, int width, int height) {

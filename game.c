@@ -24,8 +24,7 @@ void gameInit(Game *game, int *scrWidth, int *scrHeight) {
 }
 
 void gameProcessInput(Game *game) {
-//    for (int k = getch(); k != ERR; k = getch()) {
-    int k = getch();
+    for (int k = getch(); k != ERR; k = getch()) {
         switch (k) {
             case 'q':
                 game->state = GAME_EXIT;
@@ -59,7 +58,7 @@ void gameProcessInput(Game *game) {
                 game->playerInput[1] = DOWN;
                 break;
         }
-//    }
+    }
 
 }
 
@@ -150,6 +149,12 @@ void gameDraw(Game *game) {
     UNSET_COLOR(COLOR_SNAKE0);
     SET_COLOR(COLOR_SNAKE1);
     snakeDraw(&game->snake[1]);
+    UNSET_COLOR(COLOR_SNAKE1);
+    SET_COLOR(COLOR_SNAKE0);
+    snakeDrawHead(&game->snake[0]);
+    UNSET_COLOR(COLOR_SNAKE0);
+    SET_COLOR(COLOR_SNAKE1);
+    snakeDrawHead(&game->snake[1]);
     UNSET_COLOR(COLOR_SNAKE1);
 
     /* draw item */
